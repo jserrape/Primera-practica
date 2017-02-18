@@ -42,7 +42,6 @@ public class AgenteFormulario extends Agent {
         myGui.setVisible(true);
 
         //Registro de la Ontología
-        
         //Añadir tareas principales
         addBehaviour(new buscarAgente(this, 5000, "Consola", this, "Agente formulario"));
         addBehaviour(new buscarAgente(this, 5000, "Operacion", this, "Agente formulario"));
@@ -72,6 +71,14 @@ public class AgenteFormulario extends Agent {
         agentesOperacion = new AID[t];
         System.arraycopy(agentes, 0, agentesOperacion, 0, t);
         myGui.activarEnviar(true);
+    }
+
+    public AID[] getAgentesConsola() {
+        return agentesConsola;
+    }
+    
+    public ArrayList<String> getMensajesPendientes() {
+        return mensajesPendientes;
     }
 
     public void noOperacion() {
