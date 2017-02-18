@@ -28,6 +28,7 @@ import utilidad.Punto2D;
  * @author pedroj
  */
 public class AgenteOperacion extends Agent {
+
     private AID[] agentesConsola;
     private ArrayList<String> mensajesPendientes;
     private ArrayList<Punto2D> operacionesPendientes;
@@ -39,37 +40,44 @@ public class AgenteOperacion extends Agent {
         mensajesPendientes = new ArrayList();
         operacionesPendientes = new ArrayList();
         rnd = new Random();
-        
+
         //Registro en páginas Amarrillas
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
-	ServiceDescription sd = new ServiceDescription();
-	sd.setType("Utilidad");
-	sd.setName("Operacion");
-	dfd.addServices(sd);
-	try {
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType("Utilidad");
+        sd.setName("Operacion");
+        dfd.addServices(sd);
+        try {
             DFService.register(this, dfd);
-	}
-	catch (FIPAException fe) {
+        } catch (FIPAException fe) {
             fe.printStackTrace();
-	}
-        
+        }
+
         //Regisro de la Ontología
         
         //Añadir las tareas principales
         addBehaviour(new buscarAgente(this, 5000, "Consola", this, "Agente formulario"));
         addBehaviour(new buscarAgente(this, 5000, "Operacion", this, "Agente formulario"));
         addBehaviour(new TareaRecepcionOperacion());
-        addBehaviour(new enviarAConsola(this,10000));
+        addBehaviour(new enviarAConsola(this, 10000, "Agente Operacion", this));
     }
-    
-     public void lista(AID[] agentes, int t) {
+
+    public void lista(AID[] agentes, int t) {
         agentesConsola = new AID[t];
         System.arraycopy(agentes, 0, agentesConsola, 0, t);
     }
 
     public void noLista() {
         agentesConsola = null;
+    }
+
+    public AID[] getAgentesConsola() {
+        return agentesConsola;
+    }
+
+    public ArrayList<String> getMensajesPendientes() {
+        return mensajesPendientes;
     }
 
     public void operaciones(AID[] agentes, int t) {
@@ -80,49 +88,48 @@ public class AgenteOperacion extends Agent {
     public void noOperacion() {
         agentesConsola = null;
     }
-    
+
     @Override
     protected void takeDown() {
         //Desregistro de las Páginas Amarillas
         try {
             DFService.deregister(this);
-	}
-            catch (FIPAException fe) {
+        } catch (FIPAException fe) {
             fe.printStackTrace();
-	}
-        
+        }
+
         //Se liberan los recuros y se despide
-        
         System.out.println("Finaliza la ejecución de " + this.getName());
     }
-    
-    private String operacion (Punto2D punto) {
+
+    private String operacion(Punto2D punto) {
         double resultado;
-        
+
         //Se realiza una operación elegida de forma aleatoria
         int i = rnd.nextInt(4);
-        
+
         switch (i) {
             case 0:
                 //Suma
                 resultado = punto.getX() + punto.getY();
                 return "Se ha realizado la suma de " + punto
-                        + "\ncon el resultado: "+ resultado;
+                        + "\ncon el resultado: " + resultado;
             case 1:
                 //Resta
                 resultado = punto.getX() - punto.getY();
                 return "Se ha realizado la resta de " + punto
-                        + "\ncon el resultado: "+ resultado;
+                        + "\ncon el resultado: " + resultado;
             default:
                 //Multiplicación
                 resultado = punto.getX() * punto.getY();
                 return "Se ha realizado la multiplicación de " + punto
-                        + "\ncon el resultado: "+ resultado;
+                        + "\ncon el resultado: " + resultado;
         }
-        
-    } 
-    
+
+    }
+
     public class TareaBuscarConsola extends TickerBehaviour {
+
         //Se buscarán consolas 
         public TareaBuscarConsola(Agent a, long period) {
             super(a, period);
@@ -136,24 +143,22 @@ public class AgenteOperacion extends Agent {
             sd.setName("Consola");
             template.addServices(sd);
             try {
-                DFAgentDescription[] result = DFService.search(myAgent, template); 
+                DFAgentDescription[] result = DFService.search(myAgent, template);
                 if (result.length > 0) {
                     agentesConsola = new AID[result.length];
                     for (int i = 0; i < result.length; ++i) {
                         agentesConsola[i] = result[i].getName();
                     }
-                }
-                else {
+                } else {
                     //No se han encontrado agentes consola
                     agentesConsola = null;
-                } 
-            }
-            catch (FIPAException fe) {
-		fe.printStackTrace();
+                }
+            } catch (FIPAException fe) {
+                fe.printStackTrace();
             }
         }
     }
-    
+
     public class TareaRecepcionOperacion extends CyclicBehaviour {
 
         @Override
@@ -164,33 +169,33 @@ public class AgenteOperacion extends Agent {
             if (mensaje != null) {
                 //procesamos el mensaje
                 String[] contenido = mensaje.getContent().split(",");
-                
+
                 Punto2D punto = new Punto2D();
                 punto.setX(Double.parseDouble(contenido[0]));
                 punto.setY(Double.parseDouble(contenido[1]));
-                
+
                 operacionesPendientes.add(punto);
-                
+
                 addBehaviour(new TareaRealizarOperacion());
-            } 
-            else
+            } else {
                 block();
-            
+            }
+
         }
     }
-    
+
     public class TareaRealizarOperacion extends OneShotBehaviour {
 
         @Override
         public void action() {
             //Realizar una operacion pendiente y añadir el mensaje
             //para la consola
-            
+
             Punto2D punto = operacionesPendientes.remove(0);
-            
+
             mensajesPendientes.add(operacion(punto));
         }
-        
+
     }
 
 }
