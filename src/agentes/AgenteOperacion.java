@@ -18,6 +18,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import java.util.ArrayList;
 import java.util.Random;
+import tareas.buscarAgente;
 import tareas.enviarAConsola;
 import utilidad.MensajeConsola;
 import utilidad.Punto2D;
@@ -56,10 +57,28 @@ public class AgenteOperacion extends Agent {
         //Regisro de la Ontología
         
         //Añadir las tareas principales
-        addBehaviour(new TareaBuscarConsola(this,5000));
+        addBehaviour(new buscarAgente(this, 5000, "Consola", this, "Agente formulario"));
+        addBehaviour(new buscarAgente(this, 5000, "Operacion", this, "Agente formulario"));
         addBehaviour(new TareaRecepcionOperacion());
-        //addBehaviour(new TareaEnvioConsola(this,10000));
         addBehaviour(new enviarAConsola(this,10000));
+    }
+    
+     public void lista(AID[] agentes, int t) {
+        agentesConsola = new AID[t];
+        System.arraycopy(agentes, 0, agentesConsola, 0, t);
+    }
+
+    public void noLista() {
+        agentesConsola = null;
+    }
+
+    public void operaciones(AID[] agentes, int t) {
+        agentesConsola = new AID[t];
+        System.arraycopy(agentes, 0, agentesConsola, 0, t);
+    }
+
+    public void noOperacion() {
+        agentesConsola = null;
     }
     
     @Override
@@ -174,29 +193,4 @@ public class AgenteOperacion extends Agent {
         
     }
 
-//    public class TareaEnvioConsola extends TickerBehaviour {
-//        //Tarea de ejemplo que se repite cada 10 segundos
-//        public TareaEnvioConsola(Agent a, long period) {
-//            super(a, period);
-//        }
-//
-//        @Override
-//        protected void onTick() {
-//            ACLMessage mensaje;
-//            if (agentesConsola != null) {
-//                if (!mensajesPendientes.isEmpty()) {
-//                    mensaje = new ACLMessage(ACLMessage.INFORM);
-//                    mensaje.setSender(myAgent.getAID());
-//                    mensaje.addReceiver(agentesConsola[0]);
-//                    mensaje.setContent(mensajesPendientes.remove(0));
-//            
-//                    myAgent.send(mensaje);
-//                }
-//                else {
-//                    //Acciones que queremos hacer si no tenemos
-//                    //mensajes pendientes
-//                }
-//            }
-//        } 
-//    }
 }
